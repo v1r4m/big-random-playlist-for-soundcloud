@@ -10,8 +10,9 @@ export async function GET(
       oauthToken : process.env.OAUTH_TOKEN,
     });
 
-    const playlist = await soundcloud.tracks.getV2("succducc/azure");
-    return Response.json(playlist);
+    //const playlist = await soundcloud.tracks.getV2("succducc/azure");
+    const readableStream = await soundcloud.util.streamTrack("https://soundcloud.com/artificial-music/and-so-it-begins")
+    return Response.json(readableStream);
 
     //return Response.json({ message: 'Hello from Next.js!' })
   }
