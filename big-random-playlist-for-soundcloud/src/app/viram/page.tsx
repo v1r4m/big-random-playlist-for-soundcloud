@@ -3,6 +3,19 @@ import React, { useEffect, useRef } from 'react';
 
 const PlayApp = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const getPlaylist = async() => {
+    try{
+      const response = await fetch('/api/playlist');
+      const data = await response.json();
+      console.log(data);
+    }catch(error){{
+      console.log(error);
+    }}
+  };
+
+  useEffect(() => {
+    getPlaylist();
+  }, []);
 
   useEffect(() => {
     if (window.MediaSource) {
@@ -11,13 +24,12 @@ const PlayApp = () => {
 
       mediaSource.addEventListener('sourceopen', async () => {
         sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-        await fetchPlaylist();
+        await fetchPlaylist('/api/soundcloud');
       });
 
-      const fetchPlaylist = async () => {
+      const fetchPlaylist = async (url: string) => {
         try {
-          const response = await fetch('/api/soundcloud');
-          console.log(response);
+          const response = await fetch(url);
           await processChunkedResponse(response);
           onChunkedResponseComplete();
         } catch (error) {
@@ -27,6 +39,11 @@ const PlayApp = () => {
 
       if (audioRef.current) {
         audioRef.current.src = URL.createObjectURL(mediaSource);
+
+        // Add event listener for 'ended' event
+        audioRef.current.addEventListener('ended', () => {
+          fetchPlaylist('/api/soundcloud/new');
+        });
       }
 
       function onChunkedResponseComplete() {

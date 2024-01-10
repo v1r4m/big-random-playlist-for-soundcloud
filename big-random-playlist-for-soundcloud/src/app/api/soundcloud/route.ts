@@ -7,6 +7,7 @@ export async function GET(
     clientId: process.env.CLIENT_ID,
     oauthToken: process.env.OAUTH_TOKEN,
   });
+  const playlist1 = await soundcloud.playlists.getV2('https://soundcloud.com/v1r4m/sets/werjx4kdffud');
 
   const playlist = await soundcloud.util.streamTrack("https://soundcloud.com/virtual-riot/emotionalrmx");
   return new Response(playlist);
