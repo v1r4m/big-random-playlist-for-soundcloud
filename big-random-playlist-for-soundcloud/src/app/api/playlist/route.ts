@@ -14,7 +14,13 @@ export async function GET(
 
     var totalTracks = playlist1.track_count + playlist2.track_count;
     var randomTrack = Math.floor(Math.random() * totalTracks);
-
+    var randomTrackUri = "";
+    if (randomTrack>playlist1.track_count){
+        randomTrack = randomTrack - playlist1.track_count;
+        randomTrackUri = playlist2.tracks[randomTrack].permalink_url;
+    }else{
+        randomTrackUri = playlist1.tracks[randomTrack].permalink_url;
+    }
     //return new Response(playlist1);
-    return NextResponse.json(randomTrack);
+    return NextResponse.json(randomTrackUri);
 }

@@ -3,19 +3,6 @@ import React, { useEffect, useRef } from 'react';
 
 const PlayApp = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const getPlaylist = async() => {
-    try{
-      const response = await fetch('/api/playlist');
-      const data = await response.json();
-      console.log(data);
-    }catch(error){{
-      console.log(error);
-    }}
-  };
-
-  useEffect(() => {
-    getPlaylist();
-  }, []);
 
   useEffect(() => {
     if (window.MediaSource) {
@@ -30,6 +17,7 @@ const PlayApp = () => {
       const fetchPlaylist = async (url: string) => {
         try {
           const response = await fetch(url);
+          console.log(response);
           await processChunkedResponse(response);
           onChunkedResponseComplete();
         } catch (error) {
@@ -42,7 +30,7 @@ const PlayApp = () => {
 
         // Add event listener for 'ended' event
         audioRef.current.addEventListener('ended', () => {
-          fetchPlaylist('/api/soundcloud/new');
+          fetchPlaylist('/api/soundcloud');
         });
       }
 
