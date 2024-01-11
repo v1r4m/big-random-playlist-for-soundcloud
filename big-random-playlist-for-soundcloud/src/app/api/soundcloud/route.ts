@@ -23,5 +23,7 @@ export async function GET(
   }
 
   const playlist = await soundcloud.util.streamTrack(randomTrackUri);
-  return new Response(playlist);
+  var rs = new Response(playlist);
+  rs.headers.set('url', randomTrackUri);
+  return rs;
 }

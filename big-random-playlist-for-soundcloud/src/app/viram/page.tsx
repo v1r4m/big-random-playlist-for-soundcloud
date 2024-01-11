@@ -1,6 +1,9 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
 
+// 생긴거 개못생겼고
+// now playling... 넣어야함
+
 const PlayApp = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -17,7 +20,7 @@ const PlayApp = () => {
       const fetchPlaylist = async (url: string) => {
         try {
           const response = await fetch(url);
-          console.log(response);
+          console.log(response.headers.get('url'));
           await processChunkedResponse(response);
           onChunkedResponseComplete();
         } catch (error) {
