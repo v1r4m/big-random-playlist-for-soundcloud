@@ -43,7 +43,7 @@ const PlayApp = () => {
 
       async function processChunkedResponse(response: Response) {
         const reader = response.body!.getReader();
-
+      
         while (true) {
           const result = await reader.read();
           if (result.done) {
@@ -57,7 +57,10 @@ const PlayApp = () => {
             console.log('returning');
             break;
           } else {
-            if (sourceBuffer && !sourceBuffer.updating) {
+            if (sourceBuffer) {
+              while (sourceBuffer.updating) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
               sourceBuffer.appendBuffer(result.value);
             }
             console.log('recursing');
