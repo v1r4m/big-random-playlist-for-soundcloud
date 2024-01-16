@@ -15,15 +15,19 @@ export async function GET(
   var totalTracks = playlist1.track_count + playlist2.track_count;
   var randomTrack = Math.floor(Math.random() * totalTracks);
   var randomTrackUri = "";
+  var randomTrackLength = 100;
   if (randomTrack>playlist1.track_count){
       randomTrack = randomTrack - playlist1.track_count;
       randomTrackUri = playlist2.tracks[randomTrack].permalink_url;
+      randomTrackLength = playlist2.tracks[randomTrack].duration;
   }else{
       randomTrackUri = playlist1.tracks[randomTrack].permalink_url;
+      randomTrackLength = playlist1.tracks[randomTrack].duration;
   }
 
   const playlist = await soundcloud.util.streamTrack(randomTrackUri);
   var rs = new Response(playlist);
   rs.headers.set('url', randomTrackUri);
+  rs.headers.set('duration',String(randomTrackLength));
   return rs;
 }

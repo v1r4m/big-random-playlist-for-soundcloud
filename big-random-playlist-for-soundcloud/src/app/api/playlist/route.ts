@@ -2,6 +2,7 @@ import Soundcloud from "soundcloud.ts";
 import { NextRequest, NextResponse } from "next/server";
 import next from "next";
 
+//deprecated
 export async function GET(
     ) {
     const soundcloud = new Soundcloud({
@@ -21,6 +22,6 @@ export async function GET(
     }else{
         randomTrackUri = playlist1.tracks[randomTrack].permalink_url;
     }
-    //return new Response(playlist1);
-    return NextResponse.json(randomTrackUri);
+    // return NextResponse.json({message:"deprecated"});
+    return NextResponse.json(playlist1.tracks[randomTrack].duration);
 }
