@@ -8,6 +8,8 @@ import React, { useEffect, useRef, useState } from 'react';
 const PlayApp = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const durationRef = useRef<number | null>(null);
+  const nfRef = useRef<number>(0);
+  const isFetchPlaylistCalled = useRef(false);
   useEffect(() => {
     console.log('triggered effect');
     if (window.MediaSource) {
@@ -21,16 +23,22 @@ const PlayApp = () => {
 
       const fetchPlaylist = async (url: string) => {
         try {
-          const response = await fetch(url);
-          console.log(response.headers.get('url'));
-          console.log(response.headers.get('Content-Length'));
-          console.log(response.headers.get('duration'));
-          const durationHeader = response.headers.get('duration');
-          if (durationHeader) {
-            durationRef.current = parseFloat(durationHeader)/1000;
+          if(nfRef.current === 0){
+            const response = await fetch(url);
+            console.log(response.headers.get('url'));
+            console.log(response.headers.get('Content-Length'));
+            console.log(response.headers.get('duration'));
+            const durationHeader = response.headers.get('duration');
+            if (durationHeader) {
+              durationRef.current = parseFloat(durationHeader)/1000;
+            }
+            await processChunkedResponse(response);
+            if (audioRef.current && audioRef.current.paused) {
+              audioRef.current.play();
+            }
+            onChunkedResponseComplete();
+            nfRef.current = 0;
           }
-          await processChunkedResponse(response);
-          onChunkedResponseComplete();
         } catch (error) {
           console.error(error);
         }
@@ -40,34 +48,49 @@ const PlayApp = () => {
         audioRef.current.src = URL.createObjectURL(mediaSource);
         console.log('audioRef is not null!');
       }
-
+      const timeUpdateHandler = () => {
+        if (durationRef.current !== null) {
+          const remaining = durationRef.current - audioRef.current.currentTime;
+          if (remaining <= 1 && !isFetchPlaylistCalled.current) {
+            isFetchPlaylistCalled.current = true;
+            console.log('1 second left');
+            audioRef.current.removeEventListener('timeupdate', timeUpdateHandler);
+            fetchPlaylist('/api/soundcloud').then(() => {
+              nfRef.current = 1;
+              if (sourceBuffer) {
+                mediaSource.removeSourceBuffer(sourceBuffer);
+              }
+              if (mediaSource.readyState === 'open') {
+                // Add a new SourceBuffer to the MediaSource
+                sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+              } else if (mediaSource.readyState === 'ended') {
+                // Change the MediaSource's readyState to 'open'
+                mediaSource.endOfStream();
+                mediaSource.addEventListener('sourceopen', () => {
+                  // Add a new SourceBuffer to the MediaSource
+                  sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+                });
+              }
+              if (audioRef.current) {
+                audioRef.current.src = URL.createObjectURL(mediaSource);
+                audioRef.current.load();
+              }
+              audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
+              isFetchPlaylistCalled.current = false;
+            });
+          }
+        }
+      };
       if (audioRef && audioRef.current){
         console.log('adding event listener');
-        audioRef.current.addEventListener('ended', () => {
-          console.log('ended');
-          fetchPlaylist('/api/soundcloud');
-        });
-      
-        audioRef.current.addEventListener('timeupdate', () => {
-          if (durationRef.current !== null) {
-            const remaining = durationRef.current - audioRef.current.currentTime;
-            console.log(remaining);
-            if (remaining <= 1) {
-              console.log('1 second left');
-            }
-          }
-        });
+        audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
       }
+      
+      
+      audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
 
       function onChunkedResponseComplete() {
         console.log('all done!');
-        if (audioRef && audioRef.current){
-          console.log('adding event listener');
-          audioRef.current.addEventListener('ended', () => {
-            console.log('ended');
-            fetchPlaylist('/api/soundcloud');
-          });
-        }
       }
 
       async function processChunkedResponse(response: Response) {
@@ -92,6 +115,9 @@ const PlayApp = () => {
                 await new Promise(resolve => setTimeout(resolve, 100));
               }
               sourceBuffer.appendBuffer(result.value);
+              if (audioRef.current && audioRef.current.paused) {
+                audioRef.current.play();
+              }
             }
             console.log('recursing');
           }
