@@ -8,7 +8,6 @@ import React, { useEffect, useRef, useState } from 'react';
 const PlayApp = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const durationRef = useRef<number | null>(null);
-  const nfRef = useRef<number>(0);
   const isFetchPlaylistCalled = useRef(false);
   useEffect(() => {
     console.log('triggered effect');
@@ -23,7 +22,6 @@ const PlayApp = () => {
 
       const fetchPlaylist = async (url: string) => {
         try {
-          if(nfRef.current === 0){
             const response = await fetch(url);
             console.log(response.headers.get('url'));
             console.log(response.headers.get('Content-Length'));
@@ -37,8 +35,7 @@ const PlayApp = () => {
               audioRef.current.play();
             }
             onChunkedResponseComplete();
-            nfRef.current = 0;
-          }
+
         } catch (error) {
           console.error(error);
         }
@@ -54,12 +51,13 @@ const PlayApp = () => {
           if (remaining <= 1 && !isFetchPlaylistCalled.current) {
             isFetchPlaylistCalled.current = true;
             console.log('1 second left');
+            audioRef.current?.pause();
+            if (mediaSource.sourceBuffers.length > 0) {
+              mediaSource.removeSourceBuffer(sourceBuffer);
+            }
+            
             audioRef.current.removeEventListener('timeupdate', timeUpdateHandler);
             fetchPlaylist('/api/soundcloud').then(() => {
-              nfRef.current = 1;
-              if (sourceBuffer) {
-                mediaSource.removeSourceBuffer(sourceBuffer);
-              }
               if (mediaSource.readyState === 'open') {
                 // Add a new SourceBuffer to the MediaSource
                 sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
@@ -72,10 +70,11 @@ const PlayApp = () => {
                 });
               }
               if (audioRef.current) {
+                console.log('setting src');
                 audioRef.current.src = URL.createObjectURL(mediaSource);
+                console.log(audioRef.current.src);
                 audioRef.current.load();
               }
-              audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
               isFetchPlaylistCalled.current = false;
             });
           }
