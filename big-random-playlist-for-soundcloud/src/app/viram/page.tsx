@@ -31,6 +31,7 @@ const PlayApp = () => {
               durationRef.current = parseFloat(durationHeader)/1000;
             }
             await processChunkedResponse(response);
+            
             if (audioRef.current && audioRef.current.paused) {
               audioRef.current.play();
             }
@@ -74,6 +75,7 @@ const PlayApp = () => {
                 audioRef.current.src = URL.createObjectURL(mediaSource);
                 console.log(audioRef.current.src);
                 audioRef.current.load();
+                audioRef.current.play();
               }
               isFetchPlaylistCalled.current = false;
             });
@@ -141,11 +143,38 @@ function onError() {
   console.log('error');
 }
 
+const playAudio = () => {
+  if (audioRef.current) {
+    audioRef.current.play();
+  }
+};
+
+const pauseAudio = () => {
+  if (audioRef.current) {
+    audioRef.current.pause();
+  }
+};
+
+const skipAudio = () => {
+  if (audioRef.current) {
+    audioRef.current.currentTime += 10;
+  }
+};
+
 return (
-  <div>
-    <audio controls ref={audioRef} onEnded={myFunction} onPlay={onPlay} onPause={onPause} onError={onError}/>
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+  <audio ref={audioRef} controls className="mb-4" onEnded={myFunction} onPlay={onPlay} onPause={onPause} onError={onError}>
+    <source src="your-audio-file.mp3" type="audio/mpeg" />
+  </audio>
+  <div className="flex space-x-4">
+    <button onClick={playAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Play</button>
+    <button onClick={pauseAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Pause</button>
+    <button onClick={skipAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Skip</button>
+  </div>
   </div>
 );
 };
+
+
 
 export default PlayApp;
