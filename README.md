@@ -1,5 +1,7 @@
 # big-random-playlist-for-soundcloud
-* 사운드클라우드 랜덤재생모듈 
+* 사운드클라우드 랜덤재생모듈
+<img width="844" alt="image" src="https://github.com/v1r4m/big-random-playlist-for-soundcloud/assets/26866063/25a507d8-62e9-4b4b-9af6-14b5e1fa9b7a">
+
 
 ### main feature
 * 일단 Next.js(타입스크립트)로 만들어 봤는데요 어떤 거냐면
