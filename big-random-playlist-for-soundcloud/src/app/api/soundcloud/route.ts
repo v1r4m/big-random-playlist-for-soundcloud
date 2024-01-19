@@ -25,7 +25,8 @@ export async function GET(
       randomTrackLength = playlist1.tracks[randomTrack].duration;
   }
 
-  const playlist = await soundcloud.util.streamTrack(randomTrackUri);
+  const playlist: any = await soundcloud.util.streamTrack(randomTrackUri);
+  // 타입 안정성을 해치는 방법
   var rs = new Response(playlist);
   rs.headers.set('url', randomTrackUri);
   rs.headers.set('duration',String(randomTrackLength));

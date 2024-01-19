@@ -9,6 +9,7 @@ const PlayApp = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const durationRef = useRef<number | null>(null);
   const isFetchPlaylistCalled = useRef(false);
+  const [songName, setSongName] = useState('please press play');
   useEffect(() => {
     console.log('triggered effect');
     if (window.MediaSource) {
@@ -24,6 +25,7 @@ const PlayApp = () => {
         try {
             const response = await fetch(url);
             console.log(response.headers.get('url'));
+            setSongName(response.headers.get('url') || 'Wait for it...');
             console.log(response.headers.get('Content-Length'));
             console.log(response.headers.get('duration'));
             const durationHeader = response.headers.get('duration');
@@ -47,13 +49,13 @@ const PlayApp = () => {
         console.log('audioRef is not null!');
       }
       const timeUpdateHandler = () => {
-        if (durationRef.current !== null) {
+        if (durationRef.current !== null && audioRef.current) {
           const remaining = durationRef.current - audioRef.current.currentTime;
           if (remaining <= 1 && !isFetchPlaylistCalled.current) {
             isFetchPlaylistCalled.current = true;
             console.log('1 second left');
             audioRef.current?.pause();
-            if (mediaSource.sourceBuffers.length > 0) {
+            if (mediaSource.sourceBuffers.length > 0 && sourceBuffer) {
               mediaSource.removeSourceBuffer(sourceBuffer);
             }
             
@@ -83,18 +85,14 @@ const PlayApp = () => {
         }
       };
       if (audioRef && audioRef.current){
-        console.log('adding event listener');
         audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
       }
-      
-      
-      audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
 
-      function onChunkedResponseComplete() {
+      const onChunkedResponseComplete = () => {
         console.log('all done!');
       }
 
-      async function processChunkedResponse(response: Response) {
+      const processChunkedResponse = async (response: Response) =>{
         const reader = response.body!.getReader();
       
         while (true) {
@@ -163,14 +161,15 @@ const skipAudio = () => {
 
 return (
   <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-  <audio ref={audioRef} controls className="mb-4" onEnded={myFunction} onPlay={onPlay} onPause={onPause} onError={onError}>
-    <source src="your-audio-file.mp3" type="audio/mpeg" />
-  </audio>
-  <div className="flex space-x-4">
-    <button onClick={playAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Play</button>
-    <button onClick={pauseAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Pause</button>
-    <button onClick={skipAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Skip</button>
-  </div>
+    <h1 className="mb-4 text-s">Now Playing: {songName}</h1>
+    <audio ref={audioRef} controls className="mb-4" onEnded={myFunction} onPlay={onPlay} onPause={onPause} onError={onError}>
+      <source type="audio/mpeg" />
+    </audio>
+    <div className="flex space-x-4">
+      <button onClick={playAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Play</button>
+      <button onClick={pauseAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Pause</button>
+      <button onClick={skipAudio} className="px-4 py-2 text-white bg-blue-500 rounded">Skip</button>
+    </div>
   </div>
 );
 };
