@@ -1,5 +1,7 @@
 # big-random-playlist-for-soundcloud
 * 사운드클라우드 랜덤재생모듈
+* demo -> https://big-random-playlist-for-soundcloud.vercel.app/viram
+* 처음 플레이할 때 딜레이가 조금 있습니다. 3~4초? 5초? 참을성을 갖고 기다려야돼 ,, 
 <img width="844" alt="image" src="https://github.com/v1r4m/big-random-playlist-for-soundcloud/assets/26866063/25a507d8-62e9-4b4b-9af6-14b5e1fa9b7a">
 
 
